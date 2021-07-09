@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #ifndef BINARY_TREE_H
 #define BINARY_TREE_H
@@ -21,11 +21,12 @@ private:
 	std::function<T(T first, T second)> _operator;
 	// identity element for _operator
 	T identity_element;
+	size_t length;
 
 public:
 
 	T& operator [](size_t i) {
-		return v[i];
+		return tree[length - 1 + i];
 	}
 
 	binary_tree(
@@ -34,11 +35,13 @@ public:
 		T user_identity_element
 	) {
 
-		init_tree(in_set.size());
+		length = count_size(in_set.size());
+		tree.resize(2 * length);
 		identity_element = user_identity_element;
 		v = in_set;
+		fill(tree.begin(), tree.end(), identity_element);
 		_operator = std::move(user_operator);
-		binary_tree::tree_build(0, 0, in_set.size());
+		tree_build();
 
 	};
 	binary_tree(
@@ -48,10 +51,12 @@ public:
 	) {
 
 		identity_element = user_identity_element;
-		init_tree(in_set.size());
+		length = count_size(in_set.size());
+		tree.resize(2 * length);
+		fill(tree.begin(), tree.end(), identity_element);
 		v = std::move(in_set);
 		_operator = std::move(user_operator);
-		binary_tree::tree_build(0, 0, in_set.size());
+		tree_build();
 
 	};
 
@@ -62,10 +67,12 @@ public:
 	) {
 
 		identity_element = user_identity_element;
-		init_tree(in_set.size());
+		length = count_size(in_set.size());
+		tree.resize(2 * length);
+		fill(tree.begin(), tree.end(), identity_element);
 		v = in_set;
 		_operator = user_operator;
-		binary_tree::tree_build(0, 0, in_set.size());
+		tree_build();
 
 	};
 	binary_tree(
@@ -75,10 +82,12 @@ public:
 	) {
 
 		identity_element = user_identity_element;
-		init_tree(in_set.size());
+		length = count_size(in_set.size());
+		tree.resize(2 * length);
+		fill(tree.begin(), tree.end(), identity_element);
 		v = std::move(in_set);
 		_operator = user_operator;
-		binary_tree::tree_build(0, 0, in_set.size());
+		tree_build();
 
 	};
 
@@ -95,7 +104,7 @@ public:
 	};
 
 	inline size_t size() const {
-		return v.size();
+		return length;
 	};
 	void update(size_t position, T value) {
 		if (position > size() - 1) {
@@ -108,31 +117,29 @@ public:
 private:
 
 
-	void init_tree(size_t in_size) {
+	size_t count_size(size_t in_size) const {
 		size_t size = 1;
 		while (size < in_size) {
 			size <<= 1;
 		}
-		tree.resize(2 * size - 1);
+		return size;
 	}
 
-	void tree_build(size_t node, size_t left, size_t right) {
-		if (right == left + 1) {
-			tree[node] = v[left];
+	void tree_build() {
+		for (size_t i = 0; i < v.size(); i++) {
+			tree[length - 1 + i] = v[i];
 		}
-		else {
-			size_t middle = (left + right) / 2;
-			binary_tree::tree_build(2 * node + 1, left, middle);
-			binary_tree::tree_build(2 * node + 2, middle, right);
-			tree[node] = _operator(tree[2 * node + 1], tree[2 * node + 2]);
+		for (int i = static_cast<int>(length - 2); i >= 0; i--) {
+			tree[i] = _operator(tree[2 * i + 1], tree[2 * i + 2]);
 		}
+
 	};
 	T tree_query(
 		size_t node,
 		size_t left,
 		size_t right,
-		size_t left_user_query, // ïîëóèíòåðâàë
-		size_t right_user_query // ïîëóèíòåðâàë
+		size_t left_user_query, // Ð¿Ð¾Ð»ÑƒÐ¸Ð½Ñ‚ÐµÑ€Ð²Ð°Ð»
+		size_t right_user_query // Ð¿Ð¾Ð»ÑƒÐ¸Ð½Ñ‚ÐµÑ€Ð²Ð°Ð»
 	) {
 		if (left >= left_user_query && right <= right_user_query) {
 
@@ -146,8 +153,8 @@ private:
 		}
 		size_t middle = (left + right) / 2;
 
-		T left_result = binary_tree::tree_query(2 * node + 1, left, middle, left_user_query, right_user_query);
-		T right_result = binary_tree::tree_query(2 * node + 2, middle, right, left_user_query, right_user_query);
+		T left_result = tree_query(2 * node + 1, left, middle, left_user_query, right_user_query);
+		T right_result = tree_query(2 * node + 2, middle, right, left_user_query, right_user_query);
 
 		return _operator(left_result, right_result);
 
@@ -165,9 +172,9 @@ private:
 		else {
 			size_t middle = (left + right) / 2;
 			if (position < middle)
-				binary_tree::tree_update(2 * node + 1, left, middle, position, value);
+				tree_update(2 * node + 1, left, middle, position, value);
 			else
-				binary_tree::tree_update(2 * node + 2, middle, right, position, value);
+				tree_update(2 * node + 2, middle, right, position, value);
 			tree[node] = _operator(tree[2 * node + 1], tree[2 * node + 2]);
 		}
 	};

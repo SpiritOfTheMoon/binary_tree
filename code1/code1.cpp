@@ -9,7 +9,7 @@ int main()
 	vector<int> v = { 1, 2, 3, 4, 5 };
 	binary_tree<int> new_b = binary_tree<int>(v, [](int a, int b) {return a + b; }, 0);
 	cout << new_b[0];
-	cout << new_b.query(1, 3);
+	cout << new_b.query(0, 3);
 	return 0;
 
 }
