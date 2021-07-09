@@ -8,7 +8,7 @@
 #include <stdexcept>
 
 // class template binary tree, null_t - identity element over operation
-template <typename T, T null_t>
+template <typename T>
 class binary_tree
 {
 
@@ -17,64 +17,68 @@ private:
 	std::vector<T> v;
 	//node of the binary tree
 	std::vector<T> tree;
-	//operation is monoid (operation is associative and have identity element (null_t))
-	// default operation - '+'
-	std::function<T(T first, T second)> monoid = [](T const first, T const second) -> T {
-		return first + second;
-	};
+	//operation is monoid (operation is associative and have identity element)
+	std::function<T(T first, T second)> _operator;
+	// identity element for _operator
+	T identity_element;
 
 public:
 
-	explicit binary_tree(std::vector<T>& in_set) {
+	T& operator [](size_t i) {
+		return v[i];
+	}
 
-		tree.resize(3 * in_set.size());
+	binary_tree(
+		std::vector<T>& in_set,
+		std::function<T(T first, T second)>&& user_operator,
+		T user_identity_element
+	) {
+
+		init_tree(in_set.size());
+		identity_element = user_identity_element;
 		v = in_set;
+		_operator = std::move(user_operator);
 		binary_tree::tree_build(0, 0, in_set.size());
 
-
-
 	};
-	explicit binary_tree(std::vector<T>const&& in_set) {
+	binary_tree(
+		std::vector<T>&& in_set,
+		std::function<T(T first, T second)>&& user_operator,
+		T user_identity_element
+	) {
 
-		tree.resize(3 * in_set.size());
+		identity_element = user_identity_element;
+		init_tree(in_set.size());
 		v = std::move(in_set);
+		_operator = std::move(user_operator);
 		binary_tree::tree_build(0, 0, in_set.size());
 
 	};
 
-	binary_tree(std::vector<T>& in_set, std::function<T(T first, T second)>const&& _monoid) {
+	binary_tree(
+		std::vector<T>& in_set,
+		std::function<T(T first, T second)>const& user_operator,
+		T user_identity_element
+	) {
 
-		tree.resize(3 * in_set.size());
+		identity_element = user_identity_element;
+		init_tree(in_set.size());
 		v = in_set;
-		monoid = std::move(_monoid);
+		_operator = user_operator;
 		binary_tree::tree_build(0, 0, in_set.size());
 
 	};
-	binary_tree(std::vector<T>const&& in_set, std::function<T(T first, T second)>const&& _monoid) {
+	binary_tree(
+		std::vector<T>const&& in_set,
+		std::function<T(T first, T second)>const& user_operator,
+		T user_identity_element
+	) {
 
-		tree.resize(3 * in_set.size());
+		identity_element = user_identity_element;
+		init_tree(in_set.size());
 		v = std::move(in_set);
-		monoid = std::move(_monoid);
+		_operator = user_operator;
 		binary_tree::tree_build(0, 0, in_set.size());
-
-	};
-
-	binary_tree(std::vector<T>& in_set, std::function<T(T first, T second)>const& _monoid) {
-
-		size_t const size_binary_tree = in_set.size();
-		tree.resize(3 * size_binary_tree);
-		v = in_set;
-		monoid = _monoid;
-		binary_tree::tree_build(0, 0, size_binary_tree);
-
-	};
-	binary_tree(std::vector<T>const&& in_set, std::function<T(T first, T second)>const& _monoid) {
-
-		size_t const size_binary_tree = in_set.size();
-		tree.resize(3 * size_binary_tree);
-		v = std::move(in_set);
-		monoid = _monoid;
-		binary_tree::tree_build(0, 0, size_binary_tree);
 
 	};
 
@@ -103,6 +107,15 @@ public:
 
 private:
 
+
+	void init_tree(size_t in_size) {
+		size_t size = 1;
+		while (size < in_size) {
+			size <<= 1;
+		}
+		tree.resize(2 * size - 1);
+	}
+
 	void tree_build(size_t node, size_t left, size_t right) {
 		if (right == left + 1) {
 			tree[node] = v[left];
@@ -111,7 +124,7 @@ private:
 			size_t middle = (left + right) / 2;
 			binary_tree::tree_build(2 * node + 1, left, middle);
 			binary_tree::tree_build(2 * node + 2, middle, right);
-			tree[node] = monoid(tree[2 * node + 1], tree[2 * node + 2]);
+			tree[node] = _operator(tree[2 * node + 1], tree[2 * node + 2]);
 		}
 	};
 	T tree_query(
@@ -128,7 +141,7 @@ private:
 		}
 		if (right_user_query <= left || left_user_query >= right) {
 
-			return null_t;
+			return identity_element;
 
 		}
 		size_t middle = (left + right) / 2;
@@ -136,7 +149,7 @@ private:
 		T left_result = binary_tree::tree_query(2 * node + 1, left, middle, left_user_query, right_user_query);
 		T right_result = binary_tree::tree_query(2 * node + 2, middle, right, left_user_query, right_user_query);
 
-		return monoid(left_result, right_result);
+		return _operator(left_result, right_result);
 
 	};
 
@@ -155,7 +168,7 @@ private:
 				binary_tree::tree_update(2 * node + 1, left, middle, position, value);
 			else
 				binary_tree::tree_update(2 * node + 2, middle, right, position, value);
-			tree[node] = monoid(tree[2 * node + 1], tree[2 * node + 2]);
+			tree[node] = _operator(tree[2 * node + 1], tree[2 * node + 2]);
 		}
 	};
 };
