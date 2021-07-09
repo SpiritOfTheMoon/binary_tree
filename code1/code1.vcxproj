@@ -139,8 +139,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="binary_heap.cpp" />
-    <ClCompile Include="binary_tree.cpp" />
     <ClCompile Include="code1.cpp" />
   </ItemGroup>
   <ItemGroup>
