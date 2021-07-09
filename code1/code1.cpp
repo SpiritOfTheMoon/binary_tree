@@ -88,23 +88,7 @@ private:
 
 	vector<T> v;
 	vector<T> tree;
-	function<T(T first, T second)> monoid = [](T const first = null_t, T const second = null_t) -> T {
-		if (first == null_t) {
-			if (second == null_t) {
-				return null_t;
-			}
-			else {
-				return second;
-			}
-		}
-		else {
-			if (second == null_t) {
-				return first;
-			}
-			else {
-				return first + second;
-			}
-		}
+	function<T(T first, T second)> monoid = [](T const first, T const second) -> T {
 		return first + second;
 	};
 
@@ -171,7 +155,7 @@ int main()
 
 	vector<int> v = { 1, 2, 3, 4, 5 };
 	binary_tree<int, 0> new_b = binary_tree<int, 0>(std::move(v));
-	cout << new_b.query(1, );
+	cout << new_b.query(1, 3);
 	return 0;
 
 }
